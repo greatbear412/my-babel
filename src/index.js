@@ -1,18 +1,26 @@
-console.log(1);
+import intl from 'intl2';
+/**
+ * App
+ */
+function App() {
+    const title = 'title';
+    const desc = `desc qqwe`;
+    const desc2 = /*i18n-disable*/`desc`;
 
-function func() {
-    console.info(2);
-}
+    return (
+      <div id="app" className="app" title={"测试"} name="qwe">
+        <img src={Logo} />
+        <h1>${title}</h1>
+        <p>${desc}</p>  
+        <div>
+        {
+            /*i18n-disable*/'中文'
+        }
 
-export default class Clazz {
-    say() {
-        console.debug(3);
-    }
-    render() {
-        return <div>{console.error(4)}</div>
-    }
-}
-
-let a = 1;
-const b = a + 1;
-a++;
+        {
+          'ttttt'
+        }
+        </div>
+      </div>
+    );
+  }

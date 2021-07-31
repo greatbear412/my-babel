@@ -6,7 +6,7 @@ const types = require('@babel/types');
 const fs = require("fs");
 const parser = require('@babel/parser');
 const { transformFromAstSync, transformAsync } = require('@babel/core');
-const transform_insert_plugins = require('./plugins/transform-insert-plugin');
+const auto_i18n_transfer = require('./plugins/auto-i18n-transfer');
 
 const sourceCode = fs.readFileSync('src/index.js').toString();
 
@@ -16,7 +16,11 @@ const ast = parser.parse(sourceCode, {
 })
 
 const { code, map } = transformFromAstSync(ast, sourceCode, {
-    plugins: [transform_insert_plugins]
+    plugins: [[auto_i18n_transfer, {
+        intlName: 'intl',
+        intlPath: './src/intl',
+        outputDir: './dist/'
+    }]]
 });
 
 
@@ -27,15 +31,3 @@ fs.writeFile('./dist/index.js', code, function (err) {
         console.log('done');
     }
 });
-
-const { codeFrameColumns } = require('、');
-
-const res = codeFrameColumns(code, {
-  start: { line: 2, column: 1 },
-  end: { line: 3, column: 5 },
-}, {
-  highlightCode: true,
-  message: '这里出错了'
-});
-
-console.log(res);

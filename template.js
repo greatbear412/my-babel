@@ -20,4 +20,12 @@ traverse(ast, {
 
 const [code, map] = generator(ast);
 
+fs.writeFile('./dist/index.js', code, function (err) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log('done');
+    }
+});
+
 console.log(code);

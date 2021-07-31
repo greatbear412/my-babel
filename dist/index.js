@@ -1,22 +1,22 @@
-console.log("filename: 1 0")
-console.log(1);
+import _intl from './src/intl';
+import intl from 'intl2';
+/**
+ * App
+ */
 
-function func() {
-  console.log("filename: 4 4")
-  console.info(2);
+function App() {
+  const title = _intl('_title');
+
+  const desc = _intl('_descQqwe');
+  const desc2 = `desc`;
+  return <div id="app" className="app" title={_intl('_测试')} name={_intl('_qwe')}>
+        <img src={Logo} />
+        <h1>${title}</h1>
+        <p>${desc}</p>  
+        <div>
+        {'中文'}
+
+        {_intl('_ttttt')}
+        </div>
+      </div>;
 }
-
-export default class Clazz {
-  say() {
-    console.log("filename: 9 8")
-    console.debug(3);
-  }
-
-  render() {
-    return <div>{[console.log("filename: 12 21"), console.error(4)]}</div>;
-  }
-
-}
-let a = 1;
-const b = a + 1;
-a++;
