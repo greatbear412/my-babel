@@ -4,6 +4,10 @@ const importModule = require('@babel/helper-module-imports');
 const auto_track_plugin = declare((api, option, dirname) => {
     api.assertVersion('7');
 
+
+    const logStatement = `test(123)`;
+    const logStatementAST = api.template.ast(logStatement);
+
     return {
         visitor: {
             Program:{
@@ -34,13 +38,17 @@ const auto_track_plugin = declare((api, option, dirname) => {
             },
             'ClassMethod|FunctionDeclaration|FunctionExpression|ArrowFunctionExpression'(path, state){
                 const body = path.get('body');
+                if(body == null) {
+                    return;
+                }
                 if (body.isBlockStatement()) {
-                    body.node.body.unshift(state.tracerAST);
+                    body.node.body.unshift(logStatementAST);
                 } else {
                     // statement 如何用
-                    const ast = api.template.statement(`{${state.tracerID}();return PREV_BODY;}`)({PREV_BODY: body.node});
+                    const ast = api.template.statement(`{${logStatement};return PREV_BODY;}`)({PREV_BODY: body.node});
                     body.replaceWith(ast);
-                }
+                };
+                path.skip();
             }
         }
     }

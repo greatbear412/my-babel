@@ -26,7 +26,7 @@ const auto_i18n_transfer = declare((api, options, dirname) => {
 
     const ignoreList = ['id', 'className'];
     const generateExpression = (path, key, intlUid) => {
-        let ast = api.template.ast(`${intlUid}('${key}')`).expression;
+        let ast = api.template.statement(`${intlUid}('${key}')`)().expression;
         const pA = path.findParent(p => p.isJSXAttribute());
         if (pA && ignoreList.includes(pA.node.name.name)) return false;
         if (pA && !path.findParent(p => p.isJSXExpressionContainer())) {
@@ -89,6 +89,7 @@ const auto_i18n_transfer = declare((api, options, dirname) => {
                 let ast = generateExpression(path, key, state.intlUid);
                 if (ast) {
                     save(state.file, key, val);
+                    // TODO: 总会多一个空行
                     path.replaceWith(ast);
                     path.skip();
                 }
