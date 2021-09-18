@@ -1,16 +1,14 @@
 const {
     declare
 } = require('@babel/helper-plugin-utils');
-const importModule = require('@babel/helper-module-imports');
 const doctrine = require('doctrine');
-const {
-    file
-} = require('@babel/types');
+const renderer = require('./renderer');
+const fse = require('fs-extra');
+const path = require('path');
 
 const auto_api_doc = declare((api, options, dirname) => {
     api.assertVersion(7);
 
-    // TODO: record
     function parseComment(commentStr) {
         if (!commentStr) {
             return;
@@ -26,12 +24,31 @@ const auto_api_doc = declare((api, options, dirname) => {
             return;
         }
         switch (typeAnnotation.type) {
-            case 'TSStringKeyword': 
+            case 'TSStringKeyword':
                 return 'string';
             case 'TSNumberKeyword':
                 return 'number';
             case 'TSBooleanKeyword':
                 return 'boolean';
+        }
+    }
+
+    function generate(docs, format = 'json') {
+        if (format === 'markdown') {
+            return {
+                ext: '.md',
+                content: renderer.markdown(docs)
+            }
+        } else if (format === 'html') {
+            return {
+                ext: 'html',
+                content: renderer.html(docs)
+            }
+        } else {
+            return {
+                ext: 'json',
+                content: renderer.json(docs)
+            }
         }
     }
 
@@ -61,6 +78,9 @@ const auto_api_doc = declare((api, options, dirname) => {
                 if (path.node.leadingComments) {
                     classInfo.doc = parseComment(path.node.leadingComments[0].value);
                 }
+                if (path.node.id.leadingComments) {
+                    classInfo.doc = parseComment(path.node.id.leadingComments[0].value);
+                }
                 path.traverse({
                     ClassProperty(path) {
                         classInfo.propertiesInfo.push({
@@ -78,11 +98,12 @@ const auto_api_doc = declare((api, options, dirname) => {
                                     return {
                                         name: paramPath.toString(),
                                         type: resolveType(paramPath.getTypeAnnotation()),
-                                        doc: parseComment(path.node.leadingComments[0].value)
+                                        doc: path.node.leadingComments && parseComment(path.node.leadingComments[0].value)
                                     }
                                 })
                             }
                         } else {
+                            if (!path.node.leadingComments) return;
                             classInfo.methodsInfo.push({
                                 name: path.get('key').toString(),
                                 doc: parseComment(path.node.leadingComments[0].value),
@@ -102,9 +123,12 @@ const auto_api_doc = declare((api, options, dirname) => {
             }
         },
         post(file) {
-            const docs = file.get('doc');
-            console.log(docs);
+            const docs = file.get('docs');
+            const res = generate(docs, options.format);
+            fse.ensureDirSync(options.outputDir);
+            fse.writeFileSync(path.join(options.outputDir, 'docs' + res.ext), res.content);
         }
     }
 });
+
 module.exports = auto_api_doc;

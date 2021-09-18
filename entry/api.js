@@ -2,22 +2,16 @@ const traverse = require('@babel/traverse').default;
 const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const types = require('@babel/types');
-
-const sql_to_headers = require('./transform_tools/sql_to_headers');
-
+const path = require('path');
 const fs = require("fs");
 const parser = require('@babel/parser');
 const {
     transformFromAstSync,
     transformSync
 } = require('@babel/core');
-const auto_lint_example = require('./plugins/auto-lint-example');
-const auto_track_plugin = require('./plugins/auto-track-plugin');
+const plugin = require(path.resolve(__dirname, '../plugins/auto-api-doc'));
 
-// const sourceCode = fs.readFileSync('src/component.ts').toString();
-// const sourceCode = fs.readFileSync('src/hardcommon.sql').toString();
-const sourceCode = fs.readFileSync('src/track.ts').toString();
-const rlt = sql_to_headers(sourceCode);
+const sourceCode = fs.readFileSync(path.resolve(__dirname, '../src/api.ts')).toString();
 const {
     code,
     map
@@ -32,8 +26,9 @@ const {
     },
     sourceType: 'unambiguous',
     plugins: [
-        [auto_track_plugin, {
-            tracerID: 'test'
+        [plugin, {
+            format: 'markdown',
+            outputDir: '../dist'
         }]
     ],
     generatorOpts: {
@@ -42,7 +37,7 @@ const {
 })
 
 
-fs.writeFile('./dist/index.ts', JSON.stringify(rlt), function (err) {
+fs.writeFile('../dist/api.ts', JSON.stringify(code), function (err) {
     if (err) {
         console.log(err);
     } else {
