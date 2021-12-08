@@ -1,7 +1,7 @@
 // import { Component, OnInit } from '@angular/core';
 // import { PostContractService } from '../../post-contract.service';
 // import { PostContractApiService } from '@app/services/v2/post-contract.service';
-// import { Types, Config, DateChangeResult } from '@app/common/es-date-range/es-date-range.component';
+import { Types, Config, DateChangeResult } from '@app/common/es-date-range/es-date-range.component';
 // import { CommerceTableHeaderService } from '../commerce.table.service';
 // import { map } from 'rxjs/operators';
 import B from "./pages/b";

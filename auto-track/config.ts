@@ -1,4 +1,3 @@
-
 const config = {
     'ngOnInit|formatData': {
         importFn: 'console.log',

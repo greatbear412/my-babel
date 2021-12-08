@@ -5,8 +5,15 @@ const traverse = require("@babel/traverse").default;
 const fs = require("fs");
 const Path = require('path');
 const fileTypeList = ['html', 'ts', 'js'];
+const projectConfig = {
+    tsConfig: {}
+};
 
-module.exports = async function (filePath, plugins) {
+module.exports = async function (filePath, plugins, configs) {
+    // init
+    initTsConfigs(configs);
+
+    // transform
     const rlt = await modulesMap(filePath, new Dependecy('', [], []), plugins);
     return rlt;
 }
@@ -19,7 +26,6 @@ class Dependecy {
         this.subModules = [];
     }
 }
-
 
 async function modulesMap(filePath, data, plugins) {
     data.path = filePath;
@@ -50,8 +56,12 @@ async function modulesMap(filePath, data, plugins) {
             decoratorsBeforeExport: true
         }
     });
-    // traverse
+    // 保存Plugins处理（插桩）后的ast
+    data.ast = ast;
+
+    // traverse遍历子模块
     const subModules = traverseJS(ast, data);
+
     // repeat
     for (let i = 0; i < subModules.length; i++) {
         const subFilePath = subModules[i];
@@ -101,10 +111,18 @@ function traverseJS(ast, data) {
 
 // 路径（别名）替换
 function checkPath(filePath) {
-    // TODO: 读取tsconfig配置
-    const path = filePath.replace('@app/', 'src/app/');
+    let pathResult = '';
+    const pathsList = projectConfig.tsConfig.paths;
+    for (const shortName in pathsList) {
+        if (Object.hasOwnProperty.call(pathsList, shortName)) {
+            // eg: @app/* : [src/app/*]
+            const _path = pathsList[shortName][0].replace('\*', '');
+            const _shortName = shortName.replace('\*', '');
+            pathResult = filePath.replace(_shortName, _path);
+        }
+    }
     const checkList = ['./', '../', 'src/'];
-    return checkList.some(p => path.startsWith(p));
+    return checkList.some(p => pathResult.startsWith(p));
 }
 
 // 返回存在的文件路径
@@ -132,8 +150,15 @@ async function getFilePath(filePath) {
             } catch {}
         }
         if (err) {
-            res.err = `${filePath} 不是JS或者TS文件，已跳过`;
+            res.err = `已跳过${filePath} ： 1. 不是JS或者TS文件；2. 不存在。`;
         }
     }
     return res;
+}
+
+// 初始化
+// tsconfig 
+function initTsConfigs(configs) {
+    projectConfig.tsConfig = JSON.parse(fs.readFileSync(configs.tsConfig).toString());
+    projectConfig.tsConfig.paths = projectConfig.tsConfig.compilerOptions.paths;
 }

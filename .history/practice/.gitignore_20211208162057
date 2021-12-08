@@ -1,6 +1,5 @@
 # dependencies  npm包文件
 /node_modules
-/practice/node_modules
 /auto-track/node_modules
 .history
 .vscode
